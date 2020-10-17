@@ -188,6 +188,8 @@ negate-·ˡ (posneg i) n j =
   isSet→isSet' isSetℤ (signed-zero (not (sign n)) _) (signed-zero _ _)
                       refl (λ i → posneg (~ i) · n) i j
 
+·-neg1 : ∀ m → -1 · m ≡ - m
+·-neg1 m = (λ i → signed (not (sign m)) (ℕ.+-comm (abs m) 0 i)) ∙ cong -_ (signed-inv m)
 
 signed-distrib : ∀ s m n → signed s (m ℕ.+ n) ≡ signed s m + signed s n
 signed-distrib s zero n = refl
@@ -198,8 +200,13 @@ signed-distrib sneg (suc m) n = cong predℤ (signed-distrib sneg m n)
 ·-pos-suc m n = signed-distrib (sign n) (abs n) (m ℕ.· abs n)
                 ∙ (λ i → signed-inv n i + signed (sign-pos m (~ i) ·S sign n) (m ℕ.· abs n))
 
-
--- the below is based on that in: https://github.com/danr/Agda-Numerics
+·-neg-suc : ∀ m n → neg (suc m) · n ≡ - n + neg m · n
+·-neg-suc m n = signed-distrib (not (sign n)) (abs n) (m ℕ.· abs n) ∙ (λ i → cong -_ (signed-inv n) i + γ m i)
+  where
+  γ : ∀ m → signed (               not (sign n)) (m ℕ.· abs n)
+          ≡ signed (sign (neg m) Bool.⊕ sign n)  (m ℕ.· abs n)
+  γ zero = signed-zero (not (sign n)) (sign n)
+  γ (suc m) = refl
 
 ·-distribˡ-pos : ∀ o m n → (pos o · m) + (pos o · n) ≡ pos o · (m + n)
 ·-distribˡ-pos zero m n = signed-zero (sign n) (sign (m + n))
