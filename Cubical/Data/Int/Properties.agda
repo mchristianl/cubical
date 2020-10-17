@@ -435,6 +435,10 @@ signed-distrib sneg (suc m) (suc n) = (λ i → negsuc (ℕ.+-suc m n i)) ∙  s
 ·-pos-suc : ∀ m n → pos (suc m) · n ≡ n + pos m · n
 ·-pos-suc m n = signed-distrib (sgn n) (abs n) (m ℕ.· abs n) ∙ λ i → signed-inv n i + signed (sgn n) (m ·ⁿ abs n)
 
+·-negsuc-suc : ∀ m n → negsuc (suc m) · n ≡ - n + negsuc m · n
+·-negsuc-suc m n = signed-distrib (not (sgn n)) (abs n) (suc m ℕ.· abs n) ∙ λ i → γ i + negsuc m · n
+  where γ = sym (neg-signed-not (sgn n) (abs n)) ∙ cong -_ (signed-inv n)
+
 -- ·-sucIntˡ : ∀ m n → (sucInt m · n) ≡ (n + (m · n))
 -- -- ·-sucIntˡ m n = ·-comm (sucInt m) n ∙ {!   !} ∙ λ i → n + ·-comm n m i
 -- ·-sucIntˡ m (pos n) = {!   !}
@@ -538,6 +542,9 @@ neg-pos-neg (suc x) = refl
 
 ·-distribʳ : ∀ m n o → (m · o) + (n · o) ≡ (m + n) · o
 ·-distribʳ m n o = (λ i → ·-comm m o i + ·-comm n o i) ∙ ·-distribˡ o m n ∙ ·-comm o (m + n)
+
+·-neg1 : ∀ x → -1 · x ≡ - x
+·-neg1 x = sym (neg-signed-not (sgn x) (abs x +ⁿ 0)) ∙ (λ i → - signed (sgn x) (ℕ.+-comm (abs x) 0 i)) ∙ cong -_ (signed-inv x)
 
 private
   possuc+negsuc≡0 : ∀ n → (pos (suc n) +negsuc n) ≡ pos 0
