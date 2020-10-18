@@ -47,22 +47,8 @@ module _ where
   open import Cubical.Data.DiffInt
 
   DiffIntAsCommRing : CommRing {ℓ-zero}
-  DiffIntAsCommRing = makeCommRing {R = ℤ}
-    0
-    1
-    {! _+_  !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-    {!   !}
-
+  DiffIntAsCommRing = makeCommRing {R = ℤ} 0 1 _+_ _·_ -_ isSetℤ
+    +-assoc +-identityʳ +-inverseʳ +-comm ·-assoc ·-identityʳ ·-distribˡ ·-comm
 
 open import Cubical.Algebra.Ring using (ringequiv)
 open import Cubical.Foundations.Equiv

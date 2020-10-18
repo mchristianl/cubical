@@ -134,13 +134,11 @@ private
 +ⁿ-creates-rel-≡ a⁺ a⁻ x = eq/ (a⁺ , a⁻) (a⁺ +ⁿ x , a⁻ +ⁿ x) ((λ i → a⁺ +ⁿ ℕ.+-comm a⁻ x i) ∙ ℕ.+-assoc a⁺ x a⁻)
 
 +-respects-relʳ : (a b c : ℕ × ℕ) → rel a b → (a +' c) ≡ (b +' c)
-+-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p =
-  [ a⁺ +ⁿ c⁺       , a⁻ +ⁿ c⁻       ] ≡⟨ +ⁿ-creates-rel-≡ (a⁺ +ⁿ c⁺) (a⁻ +ⁿ c⁻) b⁻ ⟩
-  [ a⁺ +ⁿ c⁺ +ⁿ b⁻ , a⁻ +ⁿ c⁻ +ⁿ b⁻ ] ≡[ i ]⟨ [ commˡⁿ a⁺ c⁺ b⁻ i , commˡⁿ a⁻ c⁻ b⁻ i ] ⟩
-  [ a⁺ +ⁿ b⁻ +ⁿ c⁺ , a⁻ +ⁿ b⁻ +ⁿ c⁻ ] ≡[ i ]⟨ [ p i +ⁿ c⁺ , ℕ.+-comm a⁻ b⁻ i +ⁿ c⁻ ] ⟩
-  [ b⁺ +ⁿ a⁻ +ⁿ c⁺ , b⁻ +ⁿ a⁻ +ⁿ c⁻ ] ≡[ i ]⟨ [ commˡⁿ b⁺ a⁻ c⁺ i , commˡⁿ b⁻ a⁻ c⁻ i ] ⟩
-  [ b⁺ +ⁿ c⁺ +ⁿ a⁻ , b⁻ +ⁿ c⁻ +ⁿ a⁻ ] ≡⟨ sym (+ⁿ-creates-rel-≡ (b⁺ +ⁿ c⁺) (b⁻ +ⁿ c⁻) a⁻) ⟩
-  [ b⁺ +ⁿ c⁺       , b⁻ +ⁿ c⁻       ] ∎
++-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ +ⁿ c⁺ , a⁻ +ⁿ c⁻) (b⁺ +ⁿ c⁺ , b⁻ +ⁿ c⁻) (
+  (a⁺ +ⁿ c⁺) +ⁿ (b⁻ +ⁿ c⁻) ≡⟨ lem0 a⁺ c⁺ b⁻ c⁻ ⟩
+  (a⁺ +ⁿ b⁻) +ⁿ (c⁺ +ⁿ c⁻) ≡[ i ]⟨ p i +ⁿ (c⁺ +ⁿ c⁻) ⟩
+  (b⁺ +ⁿ a⁻) +ⁿ (c⁺ +ⁿ c⁻) ≡⟨ sym (lem0 b⁺ c⁺ a⁻ c⁻) ⟩
+  (b⁺ +ⁿ c⁺) +ⁿ (a⁻ +ⁿ c⁻) ∎)
 
 +-respects-relˡ : (a b c : ℕ × ℕ) → rel b c → (a +' b) ≡ (a +' c)
 +-respects-relˡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ +ⁿ b⁺ , a⁻ +ⁿ b⁻) (a⁺ +ⁿ c⁺ , a⁻ +ⁿ c⁻) (
@@ -162,36 +160,101 @@ neg-respects-rel'-≡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) p = eq/ {R = rel} (a⁻ , 
 -_ = rec {R = rel} {B = ℤ} isSetℤ -'_ neg-respects-rel'-≡
 
 _·'_ : (a b : ℕ × ℕ) → ℤ
-(a⁺ , a⁻) ·' (b⁺ , b⁻) = [ a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻ ]
+(a⁺ , a⁻) ·' (b⁺ , b⁻) = [ a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺ ]
 
 private
   lem1 : ∀ a b c d → (a +ⁿ b) +ⁿ (c +ⁿ d) ≡ (a +ⁿ d) +ⁿ (b +ⁿ c)
   lem1 a b c d = (λ i → (a +ⁿ b) +ⁿ ℕ.+-comm c d i) ∙ ℕ.+-assoc (a +ⁿ b) d c ∙ (λ i → commˡⁿ a b d i +ⁿ c) ∙ sym (ℕ.+-assoc (a +ⁿ d) b c)
 
 ·-respects-relʳ : (a b c : ℕ × ℕ) → rel a b → (a ·' c) ≡ (b ·' c)
-·-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻ , b⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ b⁻) (
-  (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻) +ⁿ (b⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ b⁻) ≡⟨ lem1 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (b⁺ ·ⁿ c⁻) (c⁺ ·ⁿ b⁻) ⟩
-  (a⁺ ·ⁿ c⁺ +ⁿ c⁺ ·ⁿ b⁻) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ≡[ i ]⟨ (a⁺ ·ⁿ c⁺ +ⁿ ℕ.·-comm c⁺ b⁻ i) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ⟩
+·-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ c⁺) (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻ , b⁺ ·ⁿ c⁻ +ⁿ b⁻ ·ⁿ c⁺) (
+  (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻) +ⁿ (b⁺ ·ⁿ c⁻ +ⁿ b⁻ ·ⁿ c⁺) ≡⟨ lem1 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (b⁺ ·ⁿ c⁻) (b⁻ ·ⁿ c⁺) ⟩
   (a⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁺) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ≡[ i ]⟨ ℕ.·-distribʳ a⁺ b⁻ c⁺ i +ⁿ ℕ.·-distribʳ a⁻ b⁺ c⁻ i ⟩
-  (a⁺ +ⁿ b⁻) ·ⁿ c⁺ +ⁿ (a⁻ +ⁿ b⁺) ·ⁿ c⁻             ≡[ i ]⟨ p i ·ⁿ c⁺ +ⁿ (ℕ.+-comm a⁻ b⁺ ∙ sym p ∙ ℕ.+-comm a⁺ b⁻) i ·ⁿ c⁻ ⟩
-  (b⁺ +ⁿ a⁻) ·ⁿ c⁺ +ⁿ (b⁻ +ⁿ a⁺) ·ⁿ c⁻             ≡[ i ]⟨ ℕ.·-distribʳ b⁺ a⁻ c⁺ (~ i) +ⁿ ℕ.·-distribʳ b⁻ a⁺ c⁻ (~ i) ⟩
-  (b⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁺) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ≡[ i ]⟨ (b⁺ ·ⁿ c⁺ +ⁿ ℕ.·-comm a⁻ c⁺ i) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ⟩
-  (b⁺ ·ⁿ c⁺ +ⁿ c⁺ ·ⁿ a⁻) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ≡⟨ sym (lem1 (b⁺ ·ⁿ c⁺) (b⁻ ·ⁿ c⁻) (a⁺ ·ⁿ c⁻) (c⁺ ·ⁿ a⁻)) ⟩
-  (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) ∎)
+  ((a⁺ +ⁿ b⁻) ·ⁿ c⁺) +ⁿ ((a⁻ +ⁿ b⁺) ·ⁿ c⁻)         ≡[ i ]⟨ p i ·ⁿ c⁺ +ⁿ (ℕ.+-comm a⁻ b⁺ ∙ sym p ∙ ℕ.+-comm a⁺ b⁻) i ·ⁿ c⁻ ⟩
+  ((b⁺ +ⁿ a⁻) ·ⁿ c⁺) +ⁿ ((b⁻ +ⁿ a⁺) ·ⁿ c⁻)         ≡[ i ]⟨ ℕ.·-distribʳ b⁺ a⁻ c⁺ (~ i) +ⁿ ℕ.·-distribʳ b⁻ a⁺ c⁻ (~ i) ⟩
+  (b⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁺) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ≡⟨ sym (lem1 (b⁺ ·ⁿ c⁺) (b⁻ ·ⁿ c⁻) (a⁺ ·ⁿ c⁻) (a⁻ ·ⁿ c⁺)) ⟩
+  (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ c⁺) ∎)
 
 ·-respects-relˡ : (a b c : ℕ × ℕ) → rel b c → (a ·' b) ≡ (a ·' c)
-·-respects-relˡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻) (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) (
-  a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) ≡⟨ lem0 (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) (a⁺ ·ⁿ c⁻) (c⁺ ·ⁿ a⁻) ⟩
-  a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ c⁺ ·ⁿ a⁻) ≡[ i ]⟨ a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ ℕ.·-comm c⁺ a⁻ i) ⟩
-  a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ c⁺) ≡[ i ]⟨ ℕ.·-distribˡ a⁺ b⁺ c⁻ i +ⁿ ℕ.·-distribˡ a⁻ b⁻ c⁺ i ⟩
-  a⁺ ·ⁿ (b⁺ +ⁿ c⁻) +ⁿ a⁻ ·ⁿ (b⁻ +ⁿ c⁺)           ≡[ i ]⟨ a⁺ ·ⁿ p i +ⁿ a⁻ ·ⁿ (ℕ.+-comm b⁻ c⁺ ∙ sym p ∙ ℕ.+-comm b⁺ c⁻) i ⟩
-  a⁺ ·ⁿ (c⁺ +ⁿ b⁻) +ⁿ a⁻ ·ⁿ (c⁻ +ⁿ b⁺)           ≡[ i ]⟨ ℕ.·-distribˡ a⁺ c⁺ b⁻ (~ i) +ⁿ ℕ.·-distribˡ a⁻ c⁻ b⁺ (~ i) ⟩
-  a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁺) ≡[ i ]⟨ a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ ℕ.·-comm a⁻ b⁺ i) ⟩
-  a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ a⁻) ≡⟨ sym (lem0 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (a⁺ ·ⁿ b⁻) (b⁺ ·ⁿ a⁻)) ⟩
-  a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻) ∎)
+·-respects-relˡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺) (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ c⁺) (
+  (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻) +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ c⁺) ≡⟨ lem0 (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) (a⁺ ·ⁿ c⁻) (a⁻ ·ⁿ c⁺) ⟩
+  (a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻) +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ c⁺) ≡[ i ]⟨ ℕ.·-distribˡ a⁺ b⁺ c⁻ i +ⁿ ℕ.·-distribˡ a⁻ b⁻ c⁺ i ⟩
+  (a⁺ ·ⁿ (b⁺ +ⁿ c⁻)) +ⁿ (a⁻ ·ⁿ (b⁻ +ⁿ c⁺))         ≡[ i ]⟨ a⁺ ·ⁿ p i +ⁿ a⁻ ·ⁿ (ℕ.+-comm b⁻ c⁺ ∙ sym p ∙ ℕ.+-comm b⁺ c⁻) i ⟩
+  (a⁺ ·ⁿ (c⁺ +ⁿ b⁻)) +ⁿ (a⁻ ·ⁿ (c⁻ +ⁿ b⁺))         ≡[ i ]⟨ ℕ.·-distribˡ a⁺ c⁺ b⁻ (~ i) +ⁿ ℕ.·-distribˡ a⁻ c⁻ b⁺ (~ i) ⟩
+  (a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁺) ≡⟨ sym (lem0 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (a⁺ ·ⁿ b⁻) (a⁻ ·ⁿ b⁺)) ⟩
+  (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺) ∎)
 
 _·_ : ℤ → ℤ → ℤ
 _·_ = rec2 {R = rel} {B = ℤ} isSetℤ _·'_ ·-respects-relʳ ·-respects-relˡ
+
++-identityʳ : (x : ℤ) → x + 0 ≡ x
++-identityʳ = elimProp {R = rel} (λ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) i → [ ℕ.+-comm a⁺ 0 i , ℕ.+-comm a⁻ 0 i ] }
+
++-comm : (x y : ℤ) → x + y ≡ y + x
++-comm = elimProp2 {R = rel} (λ _ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) (b⁺ , b⁻) i → [ ℕ.+-comm a⁺ b⁺ i , ℕ.+-comm a⁻ b⁻ i ] }
+
++-inverseʳ : (x : ℤ) → x + (- x) ≡ 0
++-inverseʳ = elimProp {R = rel} (λ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) → eq/ {R = rel} (a⁺ +ⁿ a⁻ , a⁻ +ⁿ a⁺) (0 , 0) (ℕ.+-zero (a⁺ +ⁿ a⁻) ∙ ℕ.+-comm a⁺ a⁻) }
+
++-assoc : (x y z : ℤ) → x + (y + z) ≡ x + y + z
++-assoc = elimProp3 {R = rel} (λ _ _ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) (b⁺ , b⁻) (c⁺ , c⁻) i → [ ℕ.+-assoc a⁺ b⁺ c⁺ i , ℕ.+-assoc a⁻ b⁻ c⁻ i ] }
+
+·-identityʳ : (x : ℤ) → x · 1 ≡ x
+·-identityʳ = elimProp {R = rel} (λ _ → isSetℤ _ _) γ
+  where
+  γ : (a : ℕ × ℕ) → _
+  γ (a⁺ , a⁻) i = [ p i , q i ]
+    where
+    p : a⁺ ·ⁿ 1 +ⁿ a⁻ ·ⁿ 0 ≡ a⁺
+    p i = ℕ.+-comm (ℕ.·-identityʳ a⁺ i) (ℕ.0≡m·0 a⁻ (~ i)) i
+    q : a⁺ ·ⁿ 0 +ⁿ a⁻ ·ⁿ 1 ≡ a⁻
+    q i = ℕ.0≡m·0 a⁺ (~ i) +ⁿ ℕ.·-identityʳ a⁻ i
+
+·-comm : (x y : ℤ) → x · y ≡ y · x
+·-comm = elimProp2 {R = rel} (λ _ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) (b⁺ , b⁻) i → [ ℕ.·-comm a⁺ b⁺ i +ⁿ ℕ.·-comm a⁻ b⁻ i , ℕ.+-comm (ℕ.·-comm a⁺ b⁻ i) (ℕ.·-comm a⁻ b⁺ i) i ] }
+
+·-distribˡ : (x y z : ℤ) → x · (y + z) ≡ x · y + x · z
+·-distribˡ = elimProp3 {R = rel} (λ _ _ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) (b⁺ , b⁻) (c⁺ , c⁻) →
+    [ a⁺ ·ⁿ (b⁺ +ⁿ c⁺) +ⁿ a⁻ ·ⁿ (b⁻ +ⁿ c⁻)
+    , a⁺ ·ⁿ (b⁻ +ⁿ c⁻) +ⁿ a⁻ ·ⁿ (b⁺ +ⁿ c⁺)
+    ] ≡[ i ]⟨ [ ℕ.·-distribˡ a⁺ b⁺ c⁺ (~ i) +ⁿ ℕ.·-distribˡ a⁻ b⁻ c⁻ (~ i) , ℕ.·-distribˡ a⁺ b⁻ c⁻ (~ i) +ⁿ ℕ.·-distribˡ a⁻ b⁺ c⁺ (~ i) ] ⟩
+    [ (a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁺) +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ c⁻)
+    , (a⁺ ·ⁿ b⁻ +ⁿ a⁺ ·ⁿ c⁻) +ⁿ (a⁻ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ c⁺)
+    ] ≡[ i ]⟨ [ lem0 (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (~ i), lem0 (a⁺ ·ⁿ b⁻) (a⁺ ·ⁿ c⁻) (a⁻ ·ⁿ b⁺) (a⁻ ·ⁿ c⁺) i ] ⟩
+    [ a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ +ⁿ (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻)
+    , a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺ +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ c⁺)
+    ] ∎
+   }
+
+·-assoc : (x y z : ℤ) → x · (y · z) ≡ x · y · z
+·-assoc = elimProp3 {R = rel} (λ _ _ _ → isSetℤ _ _)
+  λ{ (a⁺ , a⁻) (b⁺ , b⁻) (c⁺ , c⁻) →
+    [ a⁺ ·ⁿ (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻) +ⁿ a⁻ ·ⁿ (b⁺ ·ⁿ c⁻ +ⁿ b⁻ ·ⁿ c⁺)
+    , a⁺ ·ⁿ (b⁺ ·ⁿ c⁻ +ⁿ b⁻ ·ⁿ c⁺) +ⁿ a⁻ ·ⁿ (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻)
+    ] ≡[ i ]⟨ [ ℕ.·-distribˡ a⁺ (b⁺ ·ⁿ c⁺) (b⁻ ·ⁿ c⁻) (~ i) +ⁿ ℕ.·-distribˡ a⁻ (b⁺ ·ⁿ c⁻) (b⁻ ·ⁿ c⁺) (~ i)
+              , ℕ.·-distribˡ a⁺ (b⁺ ·ⁿ c⁻) (b⁻ ·ⁿ c⁺) (~ i) +ⁿ ℕ.·-distribˡ a⁻ (b⁺ ·ⁿ c⁺) (b⁻ ·ⁿ c⁻) (~ i) ] ⟩
+    [ (a⁺ ·ⁿ (b⁺ ·ⁿ c⁺) +ⁿ a⁺ ·ⁿ (b⁻ ·ⁿ c⁻)) +ⁿ (a⁻ ·ⁿ (b⁺ ·ⁿ c⁻) +ⁿ a⁻ ·ⁿ (b⁻ ·ⁿ c⁺))
+    , (a⁺ ·ⁿ (b⁺ ·ⁿ c⁻) +ⁿ a⁺ ·ⁿ (b⁻ ·ⁿ c⁺)) +ⁿ (a⁻ ·ⁿ (b⁺ ·ⁿ c⁺) +ⁿ a⁻ ·ⁿ (b⁻ ·ⁿ c⁻))
+    ] ≡[ i ]⟨ [ (ℕ.·-assoc a⁺ b⁺ c⁺ i +ⁿ ℕ.·-assoc a⁺ b⁻ c⁻ i) +ⁿ (ℕ.·-assoc a⁻ b⁺ c⁻ i +ⁿ ℕ.·-assoc a⁻ b⁻ c⁺ i)
+              , (ℕ.·-assoc a⁺ b⁺ c⁻ i +ⁿ ℕ.·-assoc a⁺ b⁻ c⁺ i) +ⁿ (ℕ.·-assoc a⁻ b⁺ c⁺ i +ⁿ ℕ.·-assoc a⁻ b⁻ c⁻ i) ] ⟩
+    [ (a⁺ ·ⁿ b⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ ·ⁿ c⁻) +ⁿ (a⁻ ·ⁿ b⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁻ ·ⁿ c⁺)
+    , (a⁺ ·ⁿ b⁺ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ b⁻ ·ⁿ c⁺) +ⁿ (a⁻ ·ⁿ b⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ b⁻ ·ⁿ c⁻)
+    ] ≡[ i ]⟨ [ lem1 (a⁺ ·ⁿ b⁺ ·ⁿ c⁺) (a⁺ ·ⁿ b⁻ ·ⁿ c⁻) (a⁻ ·ⁿ b⁺ ·ⁿ c⁻) (a⁻ ·ⁿ b⁻ ·ⁿ c⁺) i
+              , lem1 (a⁺ ·ⁿ b⁺ ·ⁿ c⁻) (a⁺ ·ⁿ b⁻ ·ⁿ c⁺) (a⁻ ·ⁿ b⁺ ·ⁿ c⁺) (a⁻ ·ⁿ b⁻ ·ⁿ c⁻) i ] ⟩
+    [ (a⁺ ·ⁿ b⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ b⁻ ·ⁿ c⁺) +ⁿ (a⁺ ·ⁿ b⁻ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁺ ·ⁿ c⁻)
+    , (a⁺ ·ⁿ b⁺ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ b⁻ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ b⁺ ·ⁿ c⁺)
+    ] ≡[ i ]⟨ [ ℕ.·-distribʳ (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) c⁺ i +ⁿ ℕ.·-distribʳ (a⁺ ·ⁿ b⁻) (a⁻ ·ⁿ b⁺) c⁻ i
+              , ℕ.·-distribʳ (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) c⁻ i +ⁿ ℕ.·-distribʳ (a⁺ ·ⁿ b⁻) (a⁻ ·ⁿ b⁺) c⁺ i ] ⟩
+    [ (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻) ·ⁿ c⁺ +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺) ·ⁿ c⁻
+    , (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻) ·ⁿ c⁻ +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺) ·ⁿ c⁺
+    ] ∎
+   }
 
 private
   _ : Dec→Bool (discreteℤ [ (3 , 5) ] [ (4 , 6) ]) ≡ true
