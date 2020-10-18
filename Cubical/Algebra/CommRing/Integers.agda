@@ -43,6 +43,27 @@ module _ where
     +-assoc +-identityʳ +-inverseʳ +-comm ·-assoc ·-identityʳ
     (λ x y z → sym (·-distribˡ x y z)) ·-comm
 
+module _ where
+  open import Cubical.Data.DiffInt
+
+  DiffIntAsCommRing : CommRing {ℓ-zero}
+  DiffIntAsCommRing = makeCommRing {R = ℤ}
+    0
+    1
+    {! _+_  !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+    {!   !}
+
+
 open import Cubical.Algebra.Ring using (ringequiv)
 open import Cubical.Foundations.Equiv
 open import Cubical.Reflection.Base using (_$_) -- TODO: add this to Foundation.Function
@@ -213,3 +234,16 @@ module _ where
 
 QuoInt≡BiInvInt-AsCommRing : QuoIntAsCommRing ≡ BiInvIntAsCommRing
 QuoInt≡BiInvInt-AsCommRing = sym Int≡QuoInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing
+
+
+-- open import Cubical.Data.DiffInt as DiffInt
+--
+-- ⟦⟧-isEquiv : isEquiv ⟦_⟧
+-- ⟦⟧-isEquiv = isoToIsEquiv (iso ⟦_⟧ ℤ→Int ℤ→Int→ℤ Int→ℤ→Int)
+--
+-- Int≃DiffInt-CommRingEquivΣ : Σ[ e ∈ ⟨ IntAsCommRing ⟩ ≃ ⟨ DiffIntAsCommRing ⟩ ] CommRingEquiv IntAsCommRing DiffIntAsCommRing e
+-- Int≃DiffInt-CommRingEquivΣ .fst = ⟦_⟧ , ⟦⟧-isEquiv
+-- Int≃DiffInt-CommRingEquivΣ .snd = ringequiv pres1 isHom+ isHom·
+--
+-- Int≡DiffInt-AsCommRing : IntAsCommRing ≡ DiffIntAsCommRing
+-- Int≡DiffInt-AsCommRing = CommRingPath _ _ .fst Int≃DiffInt-CommRingEquivΣ

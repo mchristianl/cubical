@@ -5,7 +5,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Univalence
 
 open import Cubical.Data.DiffInt.Base
-open import Cubical.Data.Nat as ℕ using (suc; zero; isSetℕ; discreteℕ; ℕ) renaming (_+_ to _+ⁿ_)
+open import Cubical.Data.Nat as ℕ using (suc; zero; isSetℕ; discreteℕ; ℕ) renaming (_+_ to _+ⁿ_; _·_ to _·ⁿ_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool
 open import Cubical.Data.Int as Int using (Int; sucInt)
@@ -115,6 +115,83 @@ fwd-bwd = elimProp {R = rel} (λ _  → isSetℤ _ _) fwd-bwd'
 
 Int≡ℤ : Int ≡ ℤ
 Int≡ℤ = isoToPath (iso fwd bwd fwd-bwd bwd-fwd)
+
+infix  8 -_
+infixl 7 _·_
+infixl 6 _+_
+
+_+'_ : (a b : ℕ × ℕ) → ℤ
+(a⁺ , a⁻) +' (b⁺ , b⁻) = [ a⁺ +ⁿ b⁺ , a⁻ +ⁿ b⁻ ]
+
+private
+  commˡⁿ : ∀ a b c → a +ⁿ b +ⁿ c ≡ a +ⁿ c +ⁿ b
+  commˡⁿ a b c = sym (ℕ.+-assoc a b c) ∙ (λ i → a +ⁿ ℕ.+-comm b c i) ∙ ℕ.+-assoc a c b
+
+  lem0 : ∀ a b c d → (a +ⁿ b) +ⁿ (c +ⁿ d) ≡ (a +ⁿ c) +ⁿ (b +ⁿ d)
+  lem0 a b c d = ℕ.+-assoc (a +ⁿ b) c d ∙ (λ i → commˡⁿ a b c i +ⁿ d) ∙ sym (ℕ.+-assoc (a +ⁿ c) b d)
+
++ⁿ-creates-rel-≡ : ∀ a⁺ a⁻ x → _≡_ {A = ℤ} [ a⁺ , a⁻ ] [ a⁺ +ⁿ x , a⁻ +ⁿ x ]
++ⁿ-creates-rel-≡ a⁺ a⁻ x = eq/ (a⁺ , a⁻) (a⁺ +ⁿ x , a⁻ +ⁿ x) ((λ i → a⁺ +ⁿ ℕ.+-comm a⁻ x i) ∙ ℕ.+-assoc a⁺ x a⁻)
+
++-respects-relʳ : (a b c : ℕ × ℕ) → rel a b → (a +' c) ≡ (b +' c)
++-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p =
+  [ a⁺ +ⁿ c⁺       , a⁻ +ⁿ c⁻       ] ≡⟨ +ⁿ-creates-rel-≡ (a⁺ +ⁿ c⁺) (a⁻ +ⁿ c⁻) b⁻ ⟩
+  [ a⁺ +ⁿ c⁺ +ⁿ b⁻ , a⁻ +ⁿ c⁻ +ⁿ b⁻ ] ≡[ i ]⟨ [ commˡⁿ a⁺ c⁺ b⁻ i , commˡⁿ a⁻ c⁻ b⁻ i ] ⟩
+  [ a⁺ +ⁿ b⁻ +ⁿ c⁺ , a⁻ +ⁿ b⁻ +ⁿ c⁻ ] ≡[ i ]⟨ [ p i +ⁿ c⁺ , ℕ.+-comm a⁻ b⁻ i +ⁿ c⁻ ] ⟩
+  [ b⁺ +ⁿ a⁻ +ⁿ c⁺ , b⁻ +ⁿ a⁻ +ⁿ c⁻ ] ≡[ i ]⟨ [ commˡⁿ b⁺ a⁻ c⁺ i , commˡⁿ b⁻ a⁻ c⁻ i ] ⟩
+  [ b⁺ +ⁿ c⁺ +ⁿ a⁻ , b⁻ +ⁿ c⁻ +ⁿ a⁻ ] ≡⟨ sym (+ⁿ-creates-rel-≡ (b⁺ +ⁿ c⁺) (b⁻ +ⁿ c⁻) a⁻) ⟩
+  [ b⁺ +ⁿ c⁺       , b⁻ +ⁿ c⁻       ] ∎
+
++-respects-relˡ : (a b c : ℕ × ℕ) → rel b c → (a +' b) ≡ (a +' c)
++-respects-relˡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ +ⁿ b⁺ , a⁻ +ⁿ b⁻) (a⁺ +ⁿ c⁺ , a⁻ +ⁿ c⁻) (
+  (a⁺ +ⁿ b⁺) +ⁿ (a⁻ +ⁿ c⁻) ≡⟨ lem0 a⁺ b⁺ a⁻ c⁻ ⟩
+  (a⁺ +ⁿ a⁻) +ⁿ (b⁺ +ⁿ c⁻) ≡[ i ]⟨ (a⁺ +ⁿ a⁻) +ⁿ p i ⟩
+  (a⁺ +ⁿ a⁻) +ⁿ (c⁺ +ⁿ b⁻) ≡⟨ sym (lem0 a⁺ c⁺ a⁻ b⁻) ⟩
+  (a⁺ +ⁿ c⁺) +ⁿ (a⁻ +ⁿ b⁻) ∎)
+
+_+_ : ℤ → ℤ → ℤ
+_+_ = rec2 {R = rel} {B = ℤ} isSetℤ _+'_ +-respects-relʳ +-respects-relˡ
+
+-'_ : ℕ × ℕ → ℤ
+-' (a⁺ , a⁻) = [ a⁻ , a⁺ ]
+
+neg-respects-rel'-≡ : (a b : ℕ × ℕ) → rel a b → (-' a) ≡ (-' b)
+neg-respects-rel'-≡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) p = eq/ {R = rel} (a⁻ , a⁺) (b⁻ , b⁺) (ℕ.+-comm a⁻ b⁺ ∙ sym p ∙ ℕ.+-comm a⁺ b⁻)
+
+-_ : ℤ → ℤ
+-_ = rec {R = rel} {B = ℤ} isSetℤ -'_ neg-respects-rel'-≡
+
+_·'_ : (a b : ℕ × ℕ) → ℤ
+(a⁺ , a⁻) ·' (b⁺ , b⁻) = [ a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻ ]
+
+private
+  lem1 : ∀ a b c d → (a +ⁿ b) +ⁿ (c +ⁿ d) ≡ (a +ⁿ d) +ⁿ (b +ⁿ c)
+  lem1 a b c d = (λ i → (a +ⁿ b) +ⁿ ℕ.+-comm c d i) ∙ ℕ.+-assoc (a +ⁿ b) d c ∙ (λ i → commˡⁿ a b d i +ⁿ c) ∙ sym (ℕ.+-assoc (a +ⁿ d) b c)
+
+·-respects-relʳ : (a b c : ℕ × ℕ) → rel a b → (a ·' c) ≡ (b ·' c)
+·-respects-relʳ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻ , b⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ b⁻) (
+  (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻) +ⁿ (b⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ b⁻) ≡⟨ lem1 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (b⁺ ·ⁿ c⁻) (c⁺ ·ⁿ b⁻) ⟩
+  (a⁺ ·ⁿ c⁺ +ⁿ c⁺ ·ⁿ b⁻) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ≡[ i ]⟨ (a⁺ ·ⁿ c⁺ +ⁿ ℕ.·-comm c⁺ b⁻ i) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ⟩
+  (a⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁺) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ c⁻) ≡[ i ]⟨ ℕ.·-distribʳ a⁺ b⁻ c⁺ i +ⁿ ℕ.·-distribʳ a⁻ b⁺ c⁻ i ⟩
+  (a⁺ +ⁿ b⁻) ·ⁿ c⁺ +ⁿ (a⁻ +ⁿ b⁺) ·ⁿ c⁻             ≡[ i ]⟨ p i ·ⁿ c⁺ +ⁿ (ℕ.+-comm a⁻ b⁺ ∙ sym p ∙ ℕ.+-comm a⁺ b⁻) i ·ⁿ c⁻ ⟩
+  (b⁺ +ⁿ a⁻) ·ⁿ c⁺ +ⁿ (b⁻ +ⁿ a⁺) ·ⁿ c⁻             ≡[ i ]⟨ ℕ.·-distribʳ b⁺ a⁻ c⁺ (~ i) +ⁿ ℕ.·-distribʳ b⁻ a⁺ c⁻ (~ i) ⟩
+  (b⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁺) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ≡[ i ]⟨ (b⁺ ·ⁿ c⁺ +ⁿ ℕ.·-comm a⁻ c⁺ i) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ⟩
+  (b⁺ ·ⁿ c⁺ +ⁿ c⁺ ·ⁿ a⁻) +ⁿ (b⁻ ·ⁿ c⁻ +ⁿ a⁺ ·ⁿ c⁻) ≡⟨ sym (lem1 (b⁺ ·ⁿ c⁺) (b⁻ ·ⁿ c⁻) (a⁺ ·ⁿ c⁻) (c⁺ ·ⁿ a⁻)) ⟩
+  (b⁺ ·ⁿ c⁺ +ⁿ b⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) ∎)
+
+·-respects-relˡ : (a b c : ℕ × ℕ) → rel b c → (a ·' b) ≡ (a ·' c)
+·-respects-relˡ a@(a⁺ , a⁻) b@(b⁺ , b⁻) c@(c⁺ , c⁻) p = eq/ {R = rel} (a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ , a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻) (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ , a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) (
+  a⁺ ·ⁿ b⁺ +ⁿ a⁻ ·ⁿ b⁻ +ⁿ (a⁺ ·ⁿ c⁻ +ⁿ c⁺ ·ⁿ a⁻) ≡⟨ lem0 (a⁺ ·ⁿ b⁺) (a⁻ ·ⁿ b⁻) (a⁺ ·ⁿ c⁻) (c⁺ ·ⁿ a⁻) ⟩
+  a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ c⁺ ·ⁿ a⁻) ≡[ i ]⟨ a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ ℕ.·-comm c⁺ a⁻ i) ⟩
+  a⁺ ·ⁿ b⁺ +ⁿ a⁺ ·ⁿ c⁻ +ⁿ (a⁻ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ c⁺) ≡[ i ]⟨ ℕ.·-distribˡ a⁺ b⁺ c⁻ i +ⁿ ℕ.·-distribˡ a⁻ b⁻ c⁺ i ⟩
+  a⁺ ·ⁿ (b⁺ +ⁿ c⁻) +ⁿ a⁻ ·ⁿ (b⁻ +ⁿ c⁺)           ≡[ i ]⟨ a⁺ ·ⁿ p i +ⁿ a⁻ ·ⁿ (ℕ.+-comm b⁻ c⁺ ∙ sym p ∙ ℕ.+-comm b⁺ c⁻) i ⟩
+  a⁺ ·ⁿ (c⁺ +ⁿ b⁻) +ⁿ a⁻ ·ⁿ (c⁻ +ⁿ b⁺)           ≡[ i ]⟨ ℕ.·-distribˡ a⁺ c⁺ b⁻ (~ i) +ⁿ ℕ.·-distribˡ a⁻ c⁻ b⁺ (~ i) ⟩
+  a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁺) ≡[ i ]⟨ a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ ℕ.·-comm a⁻ b⁺ i) ⟩
+  a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻ +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ b⁺ ·ⁿ a⁻) ≡⟨ sym (lem0 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (a⁺ ·ⁿ b⁻) (b⁺ ·ⁿ a⁻)) ⟩
+  a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻ +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ b⁺ ·ⁿ a⁻) ∎)
+
+_·_ : ℤ → ℤ → ℤ
+_·_ = rec2 {R = rel} {B = ℤ} isSetℤ _·'_ ·-respects-relʳ ·-respects-relˡ
 
 private
   _ : Dec→Bool (discreteℤ [ (3 , 5) ] [ (4 , 6) ]) ≡ true
