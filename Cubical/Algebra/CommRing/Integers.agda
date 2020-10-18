@@ -49,6 +49,7 @@ open import Cubical.Reflection.Base using (_$_) -- TODO: add this to Foundation.
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Structure
+open import Cubical.HITs.Ints.BiInvInt using (BiInvInt)
 open import Cubical.Data.Nat using (suc; zero) renaming (_·_ to _·ⁿ_; _+_ to _+ⁿ_)
 open import Cubical.Data.Int as Int using (sucInt; predInt; Int) renaming
   ( _+_ to _+'_
@@ -209,3 +210,6 @@ module _ where
 
   Int≡QuoInt-AsCommRing : IntAsCommRing ≡ QuoIntAsCommRing
   Int≡QuoInt-AsCommRing = CommRingPath _ _ .fst Int≃QuoInt-CommRingEquivΣ
+
+QuoInt≡BiInvInt-AsCommRing : QuoIntAsCommRing ≡ BiInvIntAsCommRing
+QuoInt≡BiInvInt-AsCommRing = sym Int≡QuoInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing
