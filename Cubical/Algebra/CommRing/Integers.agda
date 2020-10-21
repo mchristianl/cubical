@@ -221,15 +221,62 @@ module _ where
 QuoInt≡BiInvInt-AsCommRing : QuoIntAsCommRing ≡ BiInvIntAsCommRing
 QuoInt≡BiInvInt-AsCommRing = sym Int≡QuoInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing
 
+open import Cubical.HITs.SetQuotients
 
--- open import Cubical.Data.DiffInt as DiffInt
---
--- ⟦⟧-isEquiv : isEquiv ⟦_⟧
--- ⟦⟧-isEquiv = isoToIsEquiv (iso ⟦_⟧ ℤ→Int ℤ→Int→ℤ Int→ℤ→Int)
---
--- Int≃DiffInt-CommRingEquivΣ : Σ[ e ∈ ⟨ IntAsCommRing ⟩ ≃ ⟨ DiffIntAsCommRing ⟩ ] CommRingEquiv IntAsCommRing DiffIntAsCommRing e
--- Int≃DiffInt-CommRingEquivΣ .fst = ⟦_⟧ , ⟦⟧-isEquiv
--- Int≃DiffInt-CommRingEquivΣ .snd = ringequiv pres1 isHom+ isHom·
---
--- Int≡DiffInt-AsCommRing : IntAsCommRing ≡ DiffIntAsCommRing
--- Int≡DiffInt-AsCommRing = CommRingPath _ _ .fst Int≃DiffInt-CommRingEquivΣ
+module _ where
+  open import Cubical.Data.Sigma
+  open import Cubical.Data.Bool
+  open import Cubical.Data.Nat using (ℕ) renaming (_·_ to _·ⁿ_)
+  open import Cubical.HITs.Rationals.QuoQ using (ℚ) renaming (_+_ to _+ʳ_)
+  open import Cubical.HITs.Ints.QuoInt using (ℤ; sign; signed; abs) renaming (_+_ to _+ᶻ_)
+  open import Cubical.Data.NatPlusOne using (ℕ₊₁; 1+_)
+
+  test1 : ℤ → _
+  test1 x = {! x +ᶻ x  !}
+  -- Normal form:
+  --   x +ᶻ x
+
+  test2 : ℤ × ℕ₊₁  → _
+  test2 x = {! [ x ] +ʳ [ x ]  !}
+  -- Normal form:
+  --   [  signed (sign (fst x) ⊕ false) (abs (fst x) ·ⁿ suc (ℕ₊₁.n (snd x)))
+  --   +ᶻ signed (sign (fst x) ⊕ false) (abs (fst x) ·ⁿ suc (ℕ₊₁.n (snd x)))
+  --   , (1+ (ℕ₊₁.n (snd x) +ⁿ ℕ₊₁.n (snd x) ·ⁿ suc (ℕ₊₁.n (snd x))))
+  --   ]
+
+  test3 : ℚ → ℤ × ℕ₊₁  → _
+  test3 x y = {! x +ʳ [ y ]  !}
+  -- Normal form:
+  --   rec
+  --   (λ f g F G i j z →
+  --      squash/ (f z) (g z) (λ i₁ → F i₁ z) (λ i₁ → G i₁ z) i j)
+  --   (λ a → ...
+  --     ...
+  --   ... 2000 more lines ...
+
+open import Cubical.Data.DiffInt as DiffInt hiding (_+'_; _·'_)
+
+⟦⟧-isEquiv : isEquiv ⟦_⟧
+⟦⟧-isEquiv = isoToIsEquiv (iso ⟦_⟧ bwd fwd-bwd bwd-fwd)
+
+pres1 : 1 ≡ ⟦ 1 ⟧
+pres1 = refl
+
+isHom+ : ∀ x y → ⟦ x +' y ⟧ ≡ ⟦ x ⟧ + ⟦ y ⟧
+isHom+ (pos' zero) y = {!   !}
+isHom+ (pos' (suc n)) y = {!   !} -- ? ∙ λ i → sucℤ (isHom+ (pos' n) y i)
+isHom+ (negsuc' zero) y = {! [ 0 , 1 ] + ⟦ y ⟧  !}
+isHom+ (negsuc' (suc n)) y = {!   !}
+
+isHom· : ∀ x y → ⟦ x ·' y ⟧ ≡ ⟦ x ⟧ · ⟦ y ⟧
+isHom· = {!   !}
+
+Int≃DiffInt-CommRingEquivΣ : Σ[ e ∈ ⟨ IntAsCommRing ⟩ ≃ ⟨ DiffIntAsCommRing ⟩ ] CommRingEquiv IntAsCommRing DiffIntAsCommRing e
+Int≃DiffInt-CommRingEquivΣ .fst = ⟦_⟧ , ⟦⟧-isEquiv
+Int≃DiffInt-CommRingEquivΣ .snd = ringequiv pres1 isHom+ isHom·
+
+Int≡DiffInt-AsCommRing : IntAsCommRing ≡ DiffIntAsCommRing
+Int≡DiffInt-AsCommRing = CommRingPath _ _ .fst Int≃DiffInt-CommRingEquivΣ
+
+DiffInt≡BiInvInt-AsCommRing : DiffIntAsCommRing ≡ BiInvIntAsCommRing
+DiffInt≡BiInvInt-AsCommRing = sym Int≡DiffInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing

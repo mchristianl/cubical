@@ -3,11 +3,11 @@ module Cubical.Data.DiffInt.Properties where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Univalence
-
 open import Cubical.Data.DiffInt.Base
 open import Cubical.Data.Nat as ℕ using (suc; zero; isSetℕ; discreteℕ; ℕ) renaming (_+_ to _+ⁿ_; _·_ to _·ⁿ_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Bool
+
 open import Cubical.Data.Int as Int using (Int; sucInt)
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.Isomorphism
@@ -147,8 +147,19 @@ private
   (a⁺ +ⁿ a⁻) +ⁿ (c⁺ +ⁿ b⁻) ≡⟨ sym (lem0 a⁺ c⁺ a⁻ b⁻) ⟩
   (a⁺ +ⁿ c⁺) +ⁿ (a⁻ +ⁿ b⁻) ∎)
 
+_+''_ : ℤ → ℤ → ℤ
+_+''_ = rec2 {R = rel} {B = ℤ} φ _+'_ +-respects-relʳ +-respects-relˡ
+  where abstract φ = isSetℤ
+
+-- normalization of isSetℤ explodes. Therefore we wrap this with expanded cases
 _+_ : ℤ → ℤ → ℤ
-_+_ = rec2 {R = rel} {B = ℤ} isSetℤ _+'_ +-respects-relʳ +-respects-relˡ
+x@([ _ ])               + y@([ _ ])               = x +'' y
+x@([ _ ])               + y@(eq/ _ _ _ _)         = x +'' y
+x@(eq/ _ _ _ _)         + y@([ _ ])               = x +'' y
+x@(eq/ _ _ _ _)         + y@(eq/ _ _ _ _)         = x +'' y
+x@(eq/ _ _ _ _)         + y@(squash/ a b p q i j) = isSetℤ _ _ (cong (x +_) p) (cong (x +_) q) i j
+x@([ _ ])               + y@(squash/ a b p q i j) = isSetℤ _ _ (cong (x +_) p) (cong (x +_) q) i j
+x@(squash/ a b p q i j) + y                       = isSetℤ _ _ (cong (_+ y) p) (cong (_+ y) q) i j
 
 -'_ : ℕ × ℕ → ℤ
 -' (a⁺ , a⁻) = [ a⁻ , a⁺ ]
@@ -184,8 +195,18 @@ private
   (a⁺ ·ⁿ c⁺ +ⁿ a⁺ ·ⁿ b⁻) +ⁿ (a⁻ ·ⁿ c⁻ +ⁿ a⁻ ·ⁿ b⁺) ≡⟨ sym (lem0 (a⁺ ·ⁿ c⁺) (a⁻ ·ⁿ c⁻) (a⁺ ·ⁿ b⁻) (a⁻ ·ⁿ b⁺)) ⟩
   (a⁺ ·ⁿ c⁺ +ⁿ a⁻ ·ⁿ c⁻) +ⁿ (a⁺ ·ⁿ b⁻ +ⁿ a⁻ ·ⁿ b⁺) ∎)
 
+_·''_ : ℤ → ℤ → ℤ
+_·''_ = rec2 {R = rel} {B = ℤ} isSetℤ _·'_ ·-respects-relʳ ·-respects-relˡ
+
+-- normalization of isSetℤ explodes. Therefore we wrap this with expanded cases
 _·_ : ℤ → ℤ → ℤ
-_·_ = rec2 {R = rel} {B = ℤ} isSetℤ _·'_ ·-respects-relʳ ·-respects-relˡ
+x@([ _ ])               · y@([ _ ])               = x ·'' y
+x@([ _ ])               · y@(eq/ _ _ _ _)         = x ·'' y
+x@(eq/ _ _ _ _)         · y@([ _ ])               = x ·'' y
+x@(eq/ _ _ _ _)         · y@(eq/ _ _ _ _)         = x ·'' y
+x@(eq/ _ _ _ _)         · y@(squash/ a b p q i j) = isSetℤ _ _ (cong (x ·_) p) (cong (x ·_) q) i j
+x@([ _ ])               · y@(squash/ a b p q i j) = isSetℤ _ _ (cong (x ·_) p) (cong (x ·_) q) i j
+x@(squash/ a b p q i j) · y                       = isSetℤ _ _ (cong (_· y) p) (cong (_· y) q) i j
 
 +-identityʳ : (x : ℤ) → x + 0 ≡ x
 +-identityʳ = elimProp {R = rel} (λ _ → isSetℤ _ _)
