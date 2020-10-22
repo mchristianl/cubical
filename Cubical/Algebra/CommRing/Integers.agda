@@ -164,10 +164,10 @@ module _ where
       sucℤ  ⟦ pos' n   +' y  ⟧ ≡[ i ]⟨ sucℤ $ isHom+ (pos' n) y i ⟩
       sucℤ (⟦ pos' n ⟧ + ⟦ y ⟧) ≡⟨ refl ⟩
       sucℤ  ⟦ pos' n ⟧ + ⟦ y ⟧  ∎
-    isHom+ (negsuc'  zero  ) y = sucℤ-inj _ _ (suc-⟦⟧ (negsuc' zero +' y)
-                               ∙ (cong ⟦_⟧ $ Int.sucInt+ (negsuc' zero) y
-                               ∙ Int.+-identityˡ y)
-                               ∙ sym (sucPredℤ ⟦ y ⟧))
+    isHom+ (negsuc'  zero  ) y = sucℤ-inj _ _
+                                 ( suc-⟦⟧ (negsuc' zero +' y)
+                                 ∙ (cong ⟦_⟧ $ Int.sucInt+ (negsuc' zero) y ∙ Int.+-identityˡ y)
+                                 ∙ sym (sucPredℤ ⟦ y ⟧))
     isHom+ (negsuc' (suc n)) y = cong ⟦_⟧ (sym (Int.predInt+ (negsuc' n) y))
                                ∙ (sym $ pred-⟦⟧ (negsuc' n +' y))
                                ∙ (λ i → predℤ $ isHom+ (negsuc' n) y i)
@@ -220,3 +220,80 @@ module _ where
 
 QuoInt≡BiInvInt-AsCommRing : QuoIntAsCommRing ≡ BiInvIntAsCommRing
 QuoInt≡BiInvInt-AsCommRing = sym Int≡QuoInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing
+
+module _ where
+  open Int'
+  open import Cubical.Data.DiffInt as DiffInt hiding (_+'_; _·'_; -'_) renaming (ℤ to DiffInt)
+  open import Cubical.HITs.SetQuotients
+
+  private
+    ⟦⟧-isEquiv : isEquiv ⟦_⟧
+    ⟦⟧-isEquiv = isoToIsEquiv (iso ⟦_⟧ bwd fwd-bwd bwd-fwd)
+
+    pres1 : 1 ≡ ⟦ 1 ⟧
+    pres1 = refl
+
+    isHom+ : ∀ x y → ⟦ x +' y ⟧ ≡ ⟦ x ⟧ + ⟦ y ⟧
+    isHom+ (pos' zero) y = (λ i → ⟦ Int.+-comm 0 y i ⟧) ∙ sym (+-identityˡ ⟦ y ⟧)
+    isHom+ (pos' (suc n)) y =
+      ⟦ pos' (suc n)   +' y  ⟧  ≡[ i ]⟨ ⟦ Int.sucInt+ (pos' n) y (~ i) ⟧ ⟩
+      ⟦ sucInt (pos' n +' y) ⟧  ≡⟨ sym $ suc-⟦⟧ _ ⟩
+      sucℤ  ⟦ pos' n   +' y  ⟧  ≡[ i ]⟨ sucℤ $ isHom+ (pos' n) y i ⟩
+      sucℤ (⟦ pos' n ⟧ + ⟦ y ⟧) ≡⟨ +sucℤ ⟦ pos' n ⟧ ⟦ y ⟧ ⟩
+      sucℤ  ⟦ pos' n ⟧ + ⟦ y ⟧  ∎
+    isHom+ (negsuc' zero) y = sucℤ-inj _ _
+                              ( suc-⟦⟧ (negsuc' zero +' y)
+                              ∙ (cong ⟦_⟧ $ Int.sucInt+ (negsuc' zero) y ∙ Int.+-identityˡ y)
+                              ∙ sym (+-identityˡ ⟦ y ⟧)
+                              ∙ (λ i → suc-identity 0 0 (~ i) + ⟦ y ⟧)
+                              ∙ sym (+sucℤ -1 ⟦ y ⟧))
+    isHom+ (negsuc' (suc n)) y = cong ⟦_⟧ (sym (Int.predInt+ (negsuc' n) y))
+                               ∙ (sym $ pred-⟦⟧ (negsuc' n +' y))
+                               ∙ (λ i → predℤ $ isHom+ (negsuc' n) y i)
+                               ∙ +predℤ [ 0 , suc n ] ⟦ y ⟧
+
+    isHom· : ∀ x y → ⟦ x ·' y ⟧ ≡ ⟦ x ⟧ · ⟦ y ⟧
+    isHom· (Int.pos zero) y = cong ⟦_⟧ (Int.signed-zero (sgn' y)) ∙ sym (·-nullifiesˡ ⟦ y ⟧)
+    isHom· (pos' (suc n)) y =
+      ⟦ pos' (suc n)     ·'  y ⟧ ≡⟨ cong ⟦_⟧ $ Int.·-pos-suc n y ⟩
+      ⟦ y   +'  pos' n   ·'  y ⟧ ≡⟨ isHom+ y _ ⟩
+      ⟦ y ⟧ + ⟦ pos' n   ·'  y ⟧ ≡[ i ]⟨ ⟦ y ⟧ + isHom· (pos' n) y i ⟩
+      ⟦ y ⟧ + ⟦ pos' n ⟧ · ⟦ y ⟧ ≡⟨ sym $ ·-pos-suc ⟦ pos' n ⟧ ⟦ y ⟧ ⟩
+      sucℤ ⟦ pos' n ⟧ · ⟦ y ⟧ ∎
+    isHom· (negsuc' zero) y =
+      ⟦ -1 ·'  y ⟧ ≡⟨ cong ⟦_⟧ (Int.·-neg1 y) ⟩
+      ⟦ -'     y ⟧ ≡⟨ sym (neg-⟦⟧ y) ⟩
+        -    ⟦ y ⟧ ≡⟨ sym (·-neg1 ⟦ y ⟧) ⟩
+        -1 · ⟦ y ⟧ ∎
+    isHom· (negsuc' (suc n)) y =
+      ⟦ negsuc' (suc n) ·' y ⟧         ≡⟨ cong ⟦_⟧ $ Int.·-negsuc-suc n y ⟩
+      ⟦ -' y   +'  negsuc' n   ·'  y ⟧ ≡⟨ isHom+ (-' y) _ ⟩
+      ⟦ -' y ⟧ + ⟦ negsuc' n   ·'  y ⟧ ≡[ i ]⟨ ⟦ -' y ⟧ + isHom· (negsuc' n) y i ⟩
+      ⟦ -' y ⟧ + ⟦ negsuc' n ⟧ · ⟦ y ⟧ ≡⟨ cong₂ _+_ (sym (neg-⟦⟧ y)) refl ⟩
+      -  ⟦ y ⟧ + ⟦ negsuc' n ⟧ · ⟦ y ⟧ ≡⟨ sym (·-neg-suc ⟦ negsuc' n ⟧ ⟦ y ⟧) ⟩
+      predℤ ⟦ negsuc' n ⟧ · ⟦ y ⟧      ∎
+
+  DiffIntΣraw : TypeWithStr ℓ-zero RawRingStructure
+  DiffIntΣraw = DiffInt , _+_ , 1 , _·_
+
+  Int≃DiffInt-Σraw : IntΣraw ≃[ RawRingEquivStr ] DiffIntΣraw
+  Int≃DiffInt-Σraw = ((_ , ⟦⟧-isEquiv) , (isHom+ , pres1 , isHom·))
+
+  DiffInt-CommRingAxioms : CommRingAxioms DiffInt (str DiffIntΣraw)
+  DiffInt-CommRingAxioms = transferAxioms {S = RawRingStructure} rawRingUnivalentStr {axioms = CommRingAxioms} (CommRing→CommRingΣ IntAsCommRing) DiffIntΣraw Int≃DiffInt-Σraw
+
+  DiffIntΣ : TypeWithStr _ CommRingStructure
+  DiffIntΣ = (typ DiffIntΣraw) , (str DiffIntΣraw) , DiffInt-CommRingAxioms
+
+  DiffIntAsCommRing : CommRing
+  DiffIntAsCommRing = CommRingΣ→CommRing DiffIntΣ
+
+  Int≃DiffInt-CommRingEquiv : Σ[ e ∈ ⟨ IntAsCommRing ⟩ ≃ ⟨ DiffIntAsCommRing ⟩ ] CommRingEquiv IntAsCommRing DiffIntAsCommRing e
+  Int≃DiffInt-CommRingEquiv .fst = _ , ⟦⟧-isEquiv
+  Int≃DiffInt-CommRingEquiv .snd = ringequiv pres1 isHom+ isHom·
+
+  Int≡DiffInt-AsCommRing : IntAsCommRing ≡ DiffIntAsCommRing
+  Int≡DiffInt-AsCommRing = CommRingPath _ _ .fst Int≃DiffInt-CommRingEquiv
+
+DiffInt≡BiInvInt-AsCommRing : DiffIntAsCommRing ≡ BiInvIntAsCommRing
+DiffInt≡BiInvInt-AsCommRing = sym Int≡DiffInt-AsCommRing ∙ Int≡BiInvInt-AsCommRing

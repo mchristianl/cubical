@@ -15,3 +15,13 @@ rel (a₀ , b₀) (a₁ , b₁) = x ≡ y
     y = a₁ + b₀
 
 ℤ = (ℕ × ℕ) / rel
+
+open import Cubical.Data.Nat.Literals public
+
+instance
+  fromNatDiffInt : HasFromNat ℤ
+  fromNatDiffInt = record { Constraint = λ _ → Unit ; fromNat = λ n → [ n , 0 ] }
+
+instance
+  fromNegDiffInt : HasFromNeg ℤ
+  fromNegDiffInt = record { Constraint = λ _ → Unit ; fromNeg = λ n → [ 0 , n ] }
